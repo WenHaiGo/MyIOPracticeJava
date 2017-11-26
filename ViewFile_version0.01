@@ -1,0 +1,95 @@
+package fileandxml.file;  
+   
+import java.io.File;  
+import java.io.FileNotFoundException;  
+import java.sql.Time;  
+import java.util.*;  
+   
+import javax.rmi.CORBA.Tie;  
+   
+//目标实现一个可以传入特定类型以及传入文件路径然后打印出该目录下所有该类型文件，，实现了自己定义异常类，  
+public class ViewAllFile {  
+    static long time = 0;  
+    // 传入文件夹地址，传入要检索的文件类型，输出该文件夹下的该类型的文件，如果是视频输出视频总长度（无奈不会输出视频总时长）  
+    static ArrayList<File> fileList = new ArrayList<File>();  
+    //判断是否存在该类型文件  
+    static boolean flagExistCertainFile = false;  
+    //判断查找类型是否为MP4  
+    static boolean flagMP4 = false;  
+   
+    static void findCertainTypeFiles(String directory, String type) throws NoSuchFileUSBException {  
+        // 存放需要存放的文件  
+   
+        File file = new File(directory);  
+        if (!file.exists()) {  
+            throw new NoSuchFileUSBException();  
+        }  
+        // 将所有文件放到File数组里面  
+        File[] sum = file.listFiles();  
+   
+        // 遍历所有file，  
+        for (File i : sum) {  
+            if (i.isFile()) {  
+                if (i.getName().endsWith(type)) {  
+                    // 这是为了判断呢是否有该类型文件  
+                    flagExistCertainFile = true;  
+                    if (type == "mp4") {  
+                        flagMP4 = true;  
+                        // 记录MP4长度  
+                        time = time + i.length();  
+   
+                    }  
+   
+                    // 存入了集合中，便于后续处理  
+                    fileList.add(i);  
+                }  
+   
+            }  
+            // 利用了递归的思想，如果是文件夹的话就应该继续查找直到找到了文件为止  
+            if (i.isDirectory()) {  
+   
+                // 因为要求传入字符串，所以利用""转换为字符串  
+                findCertainTypeFiles("" + i.getAbsoluteFile(), type);  
+            }  
+        }  
+   
+    }  
+   
+    public static void main(String[] args) {  
+   
+        // 这里可能出现文件不存在的情况，应该抛出异常  
+        try {  
+            findCertainTypeFiles("D:\\百度云同步盘\\炼数成金jvm", "docx");  
+            for (int i = 0; i < fileList.size(); i++) {  
+                System.out.println(fileList.get(i));  
+            }  
+            // 输出没有该类型文件  
+            if (flagExistCertainFile == false) {  
+                {  
+                    System.out.println("该目录下没有该类型文件");  
+                }  
+            }  
+        } catch (NoSuchFileUSBException e) {  
+            // TODO Auto-generated catch block  
+            System.out.println(e.getMessage());  
+        }  
+   
+        finally {  
+            // 如果是视频则输出视频的大小信息  
+            if (flagMP4 == true) {  
+                System.out.println("视频大小" + (time / 1048576) + "mb");  
+            }  
+        }  
+   
+    }  
+}  
+   
+//  
+// 练习自己定义一个异常类  
+class NoSuchFileUSBException extends FileNotFoundException {  
+    @Override  
+    public String getMessage() {  
+        // TODO Auto-generated method stub  
+        return "文件找不到傻瓜";  
+    }  
+}  
